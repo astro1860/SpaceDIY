@@ -16,7 +16,7 @@
         #mymap {
         position: fixed;
         overflow: hidden;
-        width: 50%;
+        width: 70%;
         left: 0%;
         top: 0%;
         height: 100%;
@@ -25,21 +25,62 @@
        #mypano {
         position: fixed;
         overflow: hidden;
-        width: 50%;
-        left: 50%;
+        width: 30%;
+        left: 70%;
         top: 0%;
-        height: 50%;
+        height: 70%;
       /*  background-color: #00FF00;
 */      }
         #mybelowpano {
         position: fixed;
         overflow: hidden;
-        width: 50%;
-        left: 50%;
-        top: 50%;
-        height: 50%;
+        width: 30%;
+        left: 70%;
+        top: 70%;
+        height: 30%;
      /*   background-color: #0000FF;*/
       }
+        #menu {
+        background: #fff;
+        position: absolute;
+        z-index: 1;
+        top: 10px;
+        right: 30%;
+        border-radius: 3px;
+        width: 120px;
+        border: 1px solid rgba(0,0,0,0.4);
+        font-family: 'Open Sans', sans-serif;
+    }
+
+    #menu a {
+        font-size: 13px;
+        color: #404040;
+        display: block;
+        margin: 0;
+        padding: 0;
+        padding: 10px;
+        text-decoration: none;
+        border-bottom: 1px solid rgba(0,0,0,0.25);
+        text-align: center;
+    }
+
+    #menu a:last-child {
+        border: none;
+    }
+
+    #menu a:hover {
+        background-color: #f8f8f8;
+        color: #404040;
+    }
+
+    #menu a.active {
+        background-color: #3887be;
+        color: #ffffff;
+    }
+
+    #menu a.active:hover {
+        background: #3074a4;
+    }
 
     </style>
 </head>
@@ -51,12 +92,17 @@
     font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
 }
 </style>
+    <nav id="menu"></nav>
     <div id="mymap"></div>
     <div id="mypano"></div>
     <div id="mybelowpano">
-        <h4>Created with Mapbox.js google streetview API and data from Singapore open data portal</h4> 
-        <h10>https://data.gov.sg/dataset</h10><br>
-        <h7>by Hangxin Lu</h3>
+
+
+        <h3>Singapore Public Open Spaces and Promenade</h3>
+        <p>Create with Google Map API and MapBox.js</p>
+        <p>data source from https://data.gov.sg/</p>
+        <h10>by Hangxin Lu</h10>
+
     </div>
 
 
@@ -69,7 +115,7 @@ var sv = new google.maps.StreetViewService();
 panorama = new google.maps.StreetViewPanorama(
     document.getElementById('mypano'),
     {
-        position: {lat: 1.293691, lng: 103.853720},
+        position: {lat: 1.29, lng: 103.8443},
         pov: {heading: 270, pitch: 0},
         addressControl: false,
         linksControl: true, // guide arrows
@@ -88,29 +134,74 @@ mapboxgl.accessToken = 'pk.eyJ1IjoiaGFuZ3hpbiIsImEiOiJjaWhzMDY2NmwwMDJnd2hrcHlhd
 var map = new mapboxgl.Map({
     container: 'mymap', // container id
     style: 'mapbox://styles/hangxin/ciqs6c48r0014c3nemxatfvfh', // stylesheet location
-    center: [103.7914, 1.2738], // starting position [lng, lat]
-    zoom: 11 // starting zoom
+    center: [103.84427, 1.28998], // starting position [lng, lat]
+    zoom: 15,
+    pitch: 60,
+    bearing: -17.6,
+    hash: true, 
+    container: 'mymap'
+});
+
+map.on('load', function() {
+    // Insert the layer beneath any symbol layer.
+    var layers = map.getStyle().layers.reverse();
+    var labelLayerIdx = layers.findIndex(function (layer) {
+        return layer.type !== 'symbol';
+    });
+    var labelLayerId = labelLayerIdx !== -1 ? layers[labelLayerIdx].id : undefined;
+    map.addLayer({
+        'id': '3d-buildings',
+        'source': 'composite',
+        'source-layer': 'building',
+        'filter': ['==', 'extrude', 'true'],
+        'type': 'fill-extrusion',
+        'minzoom': 11,
+        'paint': {
+            'fill-extrusion-color': '#aaa',
+            'fill-extrusion-height': {
+                'type': 'identity',
+                'property': 'height'
+            },
+            'fill-extrusion-base': {
+                'type': 'identity',
+                'property': 'min_height'
+            },
+            'fill-extrusion-opacity': .6
+        }
+    }, labelLayerId);
 });
 
 
 map.on('load', function () {
     // Add a layer showing the state polygons.
     map.addLayer({
-        'id': 'states-layer',
+        'id': 'parks',
         'type': 'fill',
         'source': {
             'type': 'geojson',
             'data': 'geojson/openspace_park.json'
         },
         'paint': {
-            'fill-color': 'rgba(200, 100, 240, 0.8)',
-            'fill-outline-color': 'rgba(200, 100, 240, 1)'
+            'fill-color': '#9EBEC3',
+            // 'fill-outline-color': 'rgba(200, 100, 240, 1)'
         }
     });
 
+    map.addLayer({
+        'id': 'promenade',
+        'type': 'fill',
+        'source': {
+            'type': 'geojson',
+            'data': 'geojson/promenade.geojson'
+        },
+        'paint': {
+            'fill-color': '#37428C',
+            // 'fill-outline-color': 'rgba(200, 100, 240, 1)'
+        }
+    });
     // When a click event occurs on a feature in the states layer, open a popup at the
     // location of the click, with description HTML from its properties.
-    map.on('click', 'states-layer', function (e) {
+    map.on('click', 'parks', function (e) {
         new mapboxgl.Popup()
             .setLngLat(e.lngLat)
             .setHTML(e.features[0].properties.CLASSIFCTN)
@@ -124,16 +215,63 @@ map.on('load', function () {
         panorama.setVisible(true);
     });
 
+    map.on('click', 'promenade', function (e) {
+    new mapboxgl.Popup()
+        .setLngLat(e.lngLat)
+        .setHTML(e.features[0].properties.NAME)
+        .addTo(map);
+    console.log(e.lngLat);
+    panorama.setPosition(e.lngLat);
+    panorama.setPov({
+        heading: 270,
+        pitch: 0
+      });
+    panorama.setVisible(true);
+});
+
+
     // Change the cursor to a pointer when the mouse is over the states layer.
-    map.on('mouseenter', 'states-layer', function () {
+    map.on('mouseenter', 'parks', function () {
         map.getCanvas().style.cursor = 'pointer';
     });
 
     // Change it back to a pointer when it leaves.
-    map.on('mouseleave', 'states-layer', function () {
+    map.on('mouseleave', 'parks', function () {
         map.getCanvas().style.cursor = '';
     });
+
 });
+
+var toggleableLayerIds = [ 'parks', 'promenade' ];
+
+for (var i = 0; i < toggleableLayerIds.length; i++) {
+    var id = toggleableLayerIds[i];
+
+    var link = document.createElement('a');
+    link.href = '#';
+    link.className = 'active';
+    link.textContent = id;
+
+    link.onclick = function (e) {
+        var clickedLayer = this.textContent;
+        e.preventDefault();
+        e.stopPropagation();
+
+        var visibility = map.getLayoutProperty(clickedLayer, 'visibility');
+
+        if (visibility === 'visible') {
+            map.setLayoutProperty(clickedLayer, 'visibility', 'none');
+            this.className = '';
+        } else {
+            this.className = 'active';
+            map.setLayoutProperty(clickedLayer, 'visibility', 'visible');
+        }
+    };
+
+    var layers = document.getElementById('menu');
+    layers.appendChild(link);
+}
+
 }
 </script>
     <script async defer
