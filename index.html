@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title></title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.41.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.41.0/mapbox-gl.css' rel='stylesheet' />
+    <link href="https://unpkg.com/basscss@8.0.2/css/basscss.min.css" rel="stylesheet">
+    <style>
+        html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+        #mymap {
+        position: fixed;
+        overflow: hidden;
+        width: 50%;
+        left: 0%;
+        top: 0%;
+        height: 100%;
+        /*background-color: #FF0000;*/
+      }
+       #mypano {
+        position: fixed;
+        overflow: hidden;
+        width: 50%;
+        left: 50%;
+        top: 0%;
+        height: 50%;
+      /*  background-color: #00FF00;
+*/      }
+        #mybelowpano {
+        position: fixed;
+        overflow: hidden;
+        width: 50%;
+        left: 50%;
+        top: 50%;
+        height: 50%;
+     /*   background-color: #0000FF;*/
+      }
+
+    </style>
+</head>
+<body>
+
+<style>
+.mapboxgl-popup {
+    max-width: 400px;
+    font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+}
+</style>
+    <div id="mymap"></div>
+    <div id="mypano"></div>
+    <div id="mybelowpano">
+        <h4>Created with Mapbox.js google streetview API and data from Singapore open data portal</h4> 
+        <h10>https://data.gov.sg/dataset</h10><br>
+        <h7>by Hangxin Lu</h3>
+    </div>
+
+
+<script>
+function initialize() {
+
+var panorama;
+
+var sv = new google.maps.StreetViewService();
+panorama = new google.maps.StreetViewPanorama(
+    document.getElementById('mypano'),
+    {
+        position: {lat: 1.293691, lng: 103.853720},
+        pov: {heading: 270, pitch: 0},
+        addressControl: false,
+        linksControl: true, // guide arrows
+        panControl: false, // compass
+        zoomControl: false,
+        fullscreenControl: true,
+        fullscreenControlOptions: {
+        position: google.maps.ControlPosition.LEFT_TOP
+    },
+        visible: true,
+        mode: 'html5' 
+    });
+
+
+mapboxgl.accessToken = 'pk.eyJ1IjoiaGFuZ3hpbiIsImEiOiJjaWhzMDY2NmwwMDJnd2hrcHlhdmNrYXJwIn0.lvcRGHAaG_E6jlXZ0li70A';
+var map = new mapboxgl.Map({
+    container: 'mymap', // container id
+    style: 'mapbox://styles/hangxin/ciqs6c48r0014c3nemxatfvfh', // stylesheet location
+    center: [103.7914, 1.2738], // starting position [lng, lat]
+    zoom: 11 // starting zoom
+});
+
+
+map.on('load', function () {
+    // Add a layer showing the state polygons.
+    map.addLayer({
+        'id': 'states-layer',
+        'type': 'fill',
+        'source': {
+            'type': 'geojson',
+            'data': 'geojson/openspace_park.json'
+        },
+        'paint': {
+            'fill-color': 'rgba(200, 100, 240, 0.8)',
+            'fill-outline-color': 'rgba(200, 100, 240, 1)'
+        }
+    });
+
+    // When a click event occurs on a feature in the states layer, open a popup at the
+    // location of the click, with description HTML from its properties.
+    map.on('click', 'states-layer', function (e) {
+        new mapboxgl.Popup()
+            .setLngLat(e.lngLat)
+            .setHTML(e.features[0].properties.CLASSIFCTN)
+            .addTo(map);
+        console.log(e.lngLat);
+        panorama.setPosition(e.lngLat);
+        panorama.setPov({
+            heading: 270,
+            pitch: 0
+          });
+        panorama.setVisible(true);
+    });
+
+    // Change the cursor to a pointer when the mouse is over the states layer.
+    map.on('mouseenter', 'states-layer', function () {
+        map.getCanvas().style.cursor = 'pointer';
+    });
+
+    // Change it back to a pointer when it leaves.
+    map.on('mouseleave', 'states-layer', function () {
+        map.getCanvas().style.cursor = '';
+    });
+});
+}
+</script>
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC6KY81W4EaIwwGmyzJ0dtmQccX4spZL5Y&callback=initialize">
+    </script>
+</body>
+</html>
