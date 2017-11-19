@@ -7,6 +7,7 @@
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.41.0/mapbox-gl.js'></script>
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.41.0/mapbox-gl.css' rel='stylesheet' />
     <link href="https://unpkg.com/basscss@8.0.2/css/basscss.min.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Abril+Fatface|Carter+One|Gilda+Display" rel="stylesheet">
     <style>
         html, body {
         height: 100%;
@@ -89,7 +90,7 @@
 <style>
 .mapboxgl-popup {
     max-width: 400px;
-    font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    font: 12px/20px 'Helvetica Neue', Helvetica, Helvetica, sans-serif;
 }
 </style>
     <nav id="menu"></nav>
@@ -97,17 +98,31 @@
     <div id="mypano"></div>
     <div id="mybelowpano">
 
-
-        <h3>Singapore Public Open Spaces and Promenade</h3>
-        <p>Create with Google Map API and MapBox.js</p>
-        <p>data source from https://data.gov.sg/</p>
-        <h10>by Hangxin Lu</h10>
+        <h1 style="font-family: 'Abril Fatface', cursive;
+" >Singapore Public Open Spaces and Promenade</h1>
+        <p style="font-size:16px;font-family: 'Gilda Display', serif; color:grey">Data is extracted from <a href = "https://data.gov.sg/">Sinapore's open data portal.</a> Application created with Mapbox.js and Google Map API</p><hr>
+        <p style = "font-size:11px; color:grey">by Hangxin Lu
+        <a href="https://github.com/astro1860/SpaceDIY"><img src = "https://phirebase.com/wp-content/img/2016/12/octocat.png" style="width:30px;height:30px;"></a><a href="https://twitter.com/hangxinlu"><img src = "http://www.iconarchive.com/download/i97597/sicons/basic-round-social/twitter.ico" style="width:30px;height:30px;"></a></p>
 
     </div>
 
 
 <script>
+// var panorama;
 function initialize() {
+ // var gmap = new google.maps.Map(document.getElementById('mymap'), {
+ //    center: {lat: 1.285901, lng: 103.858892},
+ //    zoom: 18,
+ //    streetViewControl: false
+ //  });
+
+  // var cafeMarker = new google.maps.Marker({
+  //     position: {lat: 1.285901, lng: 103.858892},
+  //     map: map,
+  //     icon: 'http://imagespng.com/Data/DownloadLogo/Fence-PNG-Picture.png',
+  //     title: 'Cafe'
+  // });
+
 
 var panorama;
 
@@ -201,12 +216,24 @@ map.on('load', function () {
     });
     // When a click event occurs on a feature in the states layer, open a popup at the
     // location of the click, with description HTML from its properties.
+    // 'https://maps.googleapis.com/maps/api/streetview?size=400x400&location='+ String(e.lngLat.lat) +','+ String(e.lngLat.lng)'&fov=90&heading=235&pitch=10&key=AIzaSyC6KY81W4EaIwwGmyzJ0dtmQccX4spZL5Y'
+    // // // var info_promenade = 
+    //                 '<div id="content" style="width:400px; background-color:red;">' +
+    //             'Test case' + 
+    //             '</div>';
     map.on('click', 'parks', function (e) {
+
+	    var info_parks = 
+            '<div id="content" style="width:250px; background-color:#9EBEC3;">' +
+            '<img src="https://maps.googleapis.com/maps/api/streetview?size=250x200&location='+ String(e.lngLat.lat) +','+ String(e.lngLat.lng)+'&fov=90&heading=235&pitch=10&key=AIzaSyC6KY81W4EaIwwGmyzJ0dtmQccX4spZL5Y">'+
+            '<strong>Parks Type: </strong>' + String(e.features[0].properties.CLASSIFCTN).toLowerCase() + '<br>'+ '<strong>Parks Area: </strong>' + e.features[0].properties.SHAPE_Area +
+            '</div>';
         new mapboxgl.Popup()
             .setLngLat(e.lngLat)
-            .setHTML(e.features[0].properties.CLASSIFCTN)
+            .setHTML(info_parks)
+//            .setHTML(e.features[0].properties.CLASSIFCTN)
             .addTo(map);
-        console.log(e.lngLat);
+       // console.log(e.lngLat.lat,e.lngLat.lng);
         panorama.setPosition(e.lngLat);
         panorama.setPov({
             heading: 270,
@@ -216,11 +243,17 @@ map.on('load', function () {
     });
 
     map.on('click', 'promenade', function (e) {
+    var info_promenade = 
+            '<div id="content" style="width:250px; background-color:#37428C;">' +
+            '<img src="https://maps.googleapis.com/maps/api/streetview?size=250x200&location='+ String(e.lngLat.lat) +','+ String(e.lngLat.lng)+'&fov=90&heading=235&pitch=10&key=AIzaSyC6KY81W4EaIwwGmyzJ0dtmQccX4spZL5Y">'+
+            '<strong><font color="white">Promenade Name: </strong>' + String(e.features[0].properties.NAME).toLowerCase() + '<br>'+ '<strong>Promenade Area: </strong>' + e.features[0].properties.SHAPE_Area +
+            '</div>';
+
     new mapboxgl.Popup()
         .setLngLat(e.lngLat)
-        .setHTML(e.features[0].properties.NAME)
+        .setHTML(info_promenade)
         .addTo(map);
-    console.log(e.lngLat);
+    //console.log(e.lngLat);
     panorama.setPosition(e.lngLat);
     panorama.setPov({
         heading: 270,
